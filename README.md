@@ -8,7 +8,7 @@ Here is what the output looks like for a segment of a mesoscope recording (2.5Hz
 
 Here's an example of multi-probe Neuropixels recording from visual cortical areas:
 
-![rastersorted](rastermap_neuropixels.png)
+![rastersorted](rastermap_neuropixels_nm3.png)
 
 Here is an example using the algorithm (also see this [jupyter-notebook](rastermap/run_rastermap.ipynb))
 
