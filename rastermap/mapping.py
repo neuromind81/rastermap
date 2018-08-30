@@ -11,7 +11,7 @@ def upsampled_kernel(nclust, sig, upsamp):
     d1 = (xn[:,np.newaxis] - xs[np.newaxis,:])**2;
     K0 = np.exp(-1*d0/sig)
     K1 = np.exp(-1*d1/sig)
-    Km = K1 @ np.linalg.inv(K0 + 0.001 * np.eye(nclust));
+    Km = np.dot(K1, np.linalg.inv(K0 + 0.001 * np.eye(nclust)));
     return Km
 
 def map(S, ops=None, u=None, sv=None):
@@ -28,13 +28,13 @@ def map(S, ops=None, u=None, sv=None):
         # compute svd and keep iPC's of data
         nmin = min([S.shape[0],S.shape[1]])
         nmin = np.minimum(nmin-1, ops['iPC'].max())
-        sv,u = eigsh(S @ S.T, k=nmin)
-        v = S.T @ u
+        sv,u = eigsh(np.dot(S,S.T), k=nmin)
+        v = np.dot(S.T,u)
     isort = np.argsort(u[:,0]).astype(np.int32)
 
     iPC = ops['iPC']
     iPC = iPC[iPC<sv.size]
-    S = u[:,iPC] @ np.diag(sv[iPC])
+    S = np.dot(u[:,iPC],np.diag(sv[iPC]))
     NN,nPC = S.shape
     nclust = int(ops['nclust'])
     nn = int(np.floor(NN/nclust)) # number of neurons per cluster
@@ -50,7 +50,7 @@ def map(S, ops=None, u=None, sv=None):
     for sig in sig_anneal:
         # compute average activity of each cluster
         if ops['equal'] and t>0:
-            iclustup = np.argmax(cv @ Km.T, axis=1)
+            iclustup = np.argmax(np.dot(cv,Km.T), axis=1)
             isort = np.argsort(iclustup)
             V = S[isort,:]
             V = np.reshape(V[:nn*nclust,:], (nn,nclust,V.shape[1])).sum(axis=0)
@@ -62,13 +62,13 @@ def map(S, ops=None, u=None, sv=None):
                 V[:,j] = S[iin,:].sum(axis=0)
         V = gaussian_filter1d(V,sig,axis=1,mode='reflect') # smooth activity across clusters
         V /= ((V**2).sum(axis=0)[np.newaxis,:])**0.5 # normalize columns to unit norm
-        cv = S @ V # reproject onto activity across neurons
+        cv = np.dot(S,V) # reproject onto activity across neurons
         # recompute best clusters
         iclust = np.argmax(cv, axis=1)
         cmax = np.amax(cv, axis=1)
         t+=1
 
-    iclustup = np.argmax(cv @ Km.T, axis=1)
+    iclustup = np.argmax(np.dot(cv,Km.T), axis=1)
     isort = np.argsort(iclustup)
     return isort
 
@@ -76,9 +76,9 @@ def main(S,ops=None,u=None,sv=None,v=None):
     if u is None:
         nmin = min([S.shape[0],S.shape[1]])
         nmin = np.minimum(nmin-1, ops['iPC'].max())
-        sv,u = eigsh(S @ S.T, k=nmin)
+        sv,u = eigsh(np.dot(S,S.T), k=nmin)
         sv = sv**0.5
-        v = S.T @ u
+        v = np.dot(S.T,u)
     isort2 = map(S.T,ops,v,sv)
     Sm = S - S.mean(axis=1)[:,np.newaxis]
     Sm = gaussian_filter1d(Sm,3,axis=1)
