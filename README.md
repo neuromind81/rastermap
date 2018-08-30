@@ -6,7 +6,7 @@ Here is what the output looks like for a segment of a mesoscope recording (2.5Hz
 
 ![rastersorted](example.png)
 
-Here's an example of multi-probe Neuropixels recording from visual cortical areas:
+Here's an example of multi-probe Neuropixels recording showing response to visual stimulation with natural movie:
 
 ![rastersorted](rastermap_neuropixels_nm3.png)
 
